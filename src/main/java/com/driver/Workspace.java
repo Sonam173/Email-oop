@@ -19,13 +19,7 @@ public class Workspace extends Gmail{
 
     public void addMeeting(Meeting meeting){
         //add the meeting to calendar
-        for (Meeting m : calendar) {
-            if (m.getStartTime().isBefore(meeting.getEndTime()) &&
-                    m.getEndTime().isAfter(meeting.getStartTime())) {
-                throw new IllegalArgumentException("Unable to add meeting: time slot already occupied.");
-            }
-        }
-        calendar.add(meeting);
+       calendar.add(meeting);
     }
 
    // }
@@ -35,24 +29,28 @@ public class Workspace extends Gmail{
         // 1. At a particular time, you can be present in at most one meeting
         // 2. If you want to attend a meeting, you must join it at its start time and leave at end time.
         // Example: If a meeting ends at 10:00 am, you cannot attend another meeting starting at 10:00 am
-        if (calendar.isEmpty()) {
-            return 0;
+
+        ArrayList<Pair<LocalTime,Integer>> endTimes = new ArrayList<>();
+        for(int i=0;i<calendar.size();i++)
+        {
+            endTimes.add(Pair.of(calendar.get(i).getEndTime(),i));
         }
-
-        Collections.sort(calendar, Comparator.comparing(Meeting::getEndTime));
-
-        int maxMeetings = 1;
-        Meeting lastMeeting = calendar.get(0);
-
-        for (int i = 1; i < calendar.size(); i++) {
-            Meeting currentMeeting = calendar.get(i);
-            if (currentMeeting.getStartTime().isAfter(lastMeeting.getEndTime())) {
-                maxMeetings++;
-                lastMeeting = currentMeeting;
+        Collections.sort(endTimes);
+        LocalTime time_Limit= endTimes.get(0).getLeft();
+        int cnt=0;
+        if(!endTimes.isEmpty())
+        {
+            cnt+=1;
+        }
+        for(int i=1;i<endTimes.size();i++)
+        {
+            if(calendar.get(endTimes.get(i).getRight()).getStartTime().compareTo(time_Limit)>0)
+            {
+                cnt+=1;
+                time_Limit=endTimes.get(i).getLeft();
             }
         }
-
-        return maxMeetings;
+        return cnt;
 
     }
 }
